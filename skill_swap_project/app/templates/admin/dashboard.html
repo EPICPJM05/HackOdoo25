@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+            <div class="btn-group">
+                <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-line me-1"></i>Analytics
+                </a>
+                <a href="{{ url_for('admin.reports') }}?type=users" class="btn btn-outline-success">
+                    <i class="fas fa-download me-1"></i>Download Reports
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_users }}</h4>
+                        <small>Total Users</small>
+                    </div>
+                    <i class="fas fa-users fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ active_users }}</h4>
+                        <small>Active Users</small>
+                    </div>
+                    <i class="fas fa-user-check fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_swaps }}</h4>
+                        <small>Total Swaps</small>
+                    </div>
+                    <i class="fas fa-exchange-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ pending_swaps }}</h4>
+                        <small>Pending Swaps</small>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-users me-2"></i>Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.manage_skills') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-tools me-2"></i>Manage Skills
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.manage_swaps') }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-exchange-alt me-2"></i>Monitor Swaps
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.manage_messages') }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-bullhorn me-2"></i>Send Messages
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Recent Users</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ user.name }}</h6>
+                                    <small class="text-muted">{{ user.email }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ user.created_at.strftime('%Y-%m-%d') }}</small>
+                                    {% if user.is_banned %}
+                                        <span class="badge bg-danger ms-2">Banned</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent users</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Recent Swaps</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_swaps %}
+                    <div class="list-group list-group-flush">
+                        {% for swap in recent_swaps %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ swap.requester_skill }} ↔ {{ swap.receiver_skill }}</h6>
+                                        <small class="text-muted">
+                                            {{ swap.requester.name }} → {{ swap.receiver.name }}
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ 'success' if swap.status == 'accepted' else 'warning' if swap.status == 'pending' else 'secondary' }}">
+                                            {{ swap.status.title() }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ swap.created_at.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent swaps</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reports Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Download Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=users" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-users me-2"></i>Users Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=swaps" class="btn btn-outline-success w-100">
+                            <i class="fas fa-exchange-alt me-2"></i>Swaps Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=feedback" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-star me-2"></i>Feedback Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=activity" class="btn btn-outline-info w-100">
+                            <i class="fas fa-chart-bar me-2"></i>Activity Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh stats every 30 seconds
+setInterval(function() {
+    fetch('/api/admin/stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update stats if needed
+            console.log('Stats updated:', data);
+        })
+        .catch(error => {
+            console.error('Error updating stats:', error);
+        });
+}, 30000);
+</script>
+{% endblock %} 

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Header -->
+    <div class="col-12">
+        <div class="profile-header rounded mb-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        {% if current_user.photo_url %}
+                            <img src="{{ current_user.photo_url }}" alt="Profile Photo" class="profile-avatar">
+                        {% else %}
+                            <div class="profile-avatar bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h1 class="text-white mb-2">{{ current_user.name }}</h1>
+                        {% if current_user.location %}
+                            <p class="text-white-50 mb-2">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ current_user.location }}
+                            </p>
+                        {% endif %}
+                        <p class="text-white-50 mb-3">
+                            <i class="fas fa-clock me-2"></i>Available: {{ current_user.availability|title }}
+                        </p>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('users.edit_profile') }}" class="btn btn-light">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </a>
+                            <a href="{{ url_for('users.search_users') }}" class="btn btn-outline-light">
+                                <i class="fas fa-search me-2"></i>Find Skills
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="col-md-8">
+        <!-- Skills Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>My Skills
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Add Skill Form -->
+                <form method="POST" action="{{ url_for('users.add_skill') }}" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="skill_name" placeholder="Skill name" required>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" name="skill_type" required>
+                                <option value="offered">I Offer</option>
+                                <option value="wanted">I Want</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" name="proficiency_level">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate" selected>Intermediate</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Skills Offered -->
+                <h6 class="text-success mb-3">
+                    <i class="fas fa-hand-holding-heart me-2"></i>Skills I Offer
+                </h6>
+                <div class="mb-4">
+                    {% if offered_skills %}
+                        {% for skill in offered_skills %}
+                            <span class="skill-badge offered">
+                                {{ skill.skill_name }}
+                                <small class="text-muted">({{ skill.proficiency_level }})</small>
+                                <form method="POST" action="{{ url_for('users.delete_skill', skill_id=skill.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="return confirm('Remove this skill?')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No skills offered yet. Add some skills you can teach!</p>
+                    {% endif %}
+                </div>
+
+                <!-- Skills Wanted -->
+                <h6 class="text-warning mb-3">
+                    <i class="fas fa-graduation-cap me-2"></i>Skills I Want to Learn
+                </h6>
+                <div>
+                    {% if wanted_skills %}
+                        {% for skill in wanted_skills %}
+                            <span class="skill-badge wanted">
+                                {{ skill.skill_name }}
+                                <small class="text-muted">({{ skill.proficiency_level }})</small>
+                                <form method="POST" action="{{ url_for('users.delete_skill', skill_id=skill.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="return confirm('Remove this skill?')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No skills wanted yet. Add skills you'd like to learn!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Swaps -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>Recent Swap Requests
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_swaps %}
+                    {% for swap in recent_swaps %}
+                        <div class="swap-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if swap.requester_id == current_user.id %}
+                                            You → {{ swap.receiver.name }}
+                                        {% else %}
+                                            {{ swap.requester.name }} → You
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1">
+                                        <small class="text-muted">
+                                            {{ swap.requester_skill }} ↔ {{ swap.receiver_skill }}
+                                        </small>
+                                    </p>
+                                    <span class="swap-status {{ swap.status }}">
+                                        {{ swap.status|title }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    {{ swap.created_at.strftime('%b %d, %Y') }}
+                                </small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('swaps.my_swaps') }}" class="btn btn-outline-primary">
+                            View All Swaps
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No swap requests yet. Start by finding users with skills you want to learn!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- Rating -->
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h5 class="card-title">My Rating</h5>
+                <div class="rating mb-2">
+                    {% for i in range(5) %}
+                        <i class="fas fa-star {% if i < avg_rating|int %}text-warning{% endif %}"></i>
+                    {% endfor %}
+                </div>
+                <p class="text-muted">{{ avg_rating }} out of 5 ({{ rating_count }} reviews)</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('users.search_users') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-2"></i>Find Skills
+                    </a>
+                    <a href="{{ url_for('swaps.my_swaps') }}" class="btn btn-outline-success">
+                        <i class="fas fa-exchange-alt me-2"></i>My Swaps
+                    </a>
+                    <a href="{{ url_for('users.edit_profile') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Availability</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="fas fa-clock me-2"></i>{{ current_user.availability|title }}
+                </p>
+                <small class="text-muted">
+                    {% if current_user.is_public %}
+                        <i class="fas fa-eye me-1"></i>Profile is public
+                    {% else %}
+                        <i class="fas fa-eye-slash me-1"></i>Profile is private
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

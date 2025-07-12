@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <!-- Profile Photo -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            {% if current_user.photo_url %}
+                                <img src="{{ current_user.photo_url }}" alt="Current Photo" class="profile-avatar mb-2">
+                            {% else %}
+                                <div class="profile-avatar bg-light d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-user fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <input type="file" class="form-control" name="photo" accept="image/*">
+                            <small class="text-muted">Upload a new photo (optional)</small>
+                        </div>
+                        <div class="col-md-9">
+                            <h5>Profile Information</h5>
+                            <p class="text-muted">Update your profile information to help others find you.</p>
+                        </div>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ current_user.name }}" required>
+                        <div class="form-text">This is how other users will see your name.</div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               value="{{ current_user.location or '' }}" placeholder="City, Country">
+                        <div class="form-text">Your location helps others find you for local skill swaps.</div>
+                    </div>
+
+                    <!-- Availability -->
+                    <div class="mb-3">
+                        <label for="availability" class="form-label">Availability *</label>
+                        <select class="form-select" id="availability" name="availability" required>
+                            <option value="available" {% if current_user.availability == 'available' %}selected{% endif %}>
+                                Available for Swaps
+                            </option>
+                            <option value="busy" {% if current_user.availability == 'busy' %}selected{% endif %}>
+                                Busy - Limited Availability
+                            </option>
+                            <option value="unavailable" {% if current_user.availability == 'unavailable' %}selected{% endif %}>
+                                Unavailable
+                            </option>
+                        </select>
+                        <div class="form-text">Let others know your current availability for skill swaps.</div>
+                    </div>
+
+                    <!-- Profile Visibility -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" 
+                                   {% if current_user.is_public %}checked{% endif %}>
+                            <label class="form-check-label" for="is_public">
+                                Make my profile public
+                            </label>
+                        </div>
+                        <div class="form-text">Public profiles can be found by other users. Private profiles are only visible to you.</div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                        <a href="{{ url_for('users.profile') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Account Section -->
+        <div class="card mt-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Delete Account</h6>
+                <p class="text-muted">Once you delete your account, there is no going back. Please be certain.</p>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                    <i class="fas fa-trash me-2"></i>Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                <p class="text-danger"><strong>Warning:</strong> All your data, skills, and swap history will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('users.delete_account') }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preview image before upload
+document.querySelector('input[name="photo"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatar = document.querySelector('.profile-avatar img') || 
+                          document.querySelector('.profile-avatar');
+            if (avatar.tagName === 'IMG') {
+                avatar.src = e.target.result;
+            } else {
+                avatar.innerHTML = `<img src="${e.target.result}" alt="Preview" class="profile-avatar">`;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Analytics - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-chart-line me-2"></i>Platform Analytics</h2>
+            <div class="btn-group">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+                <a href="{{ url_for('admin.reports') }}?type=activity" class="btn btn-outline-success">
+                    <i class="fas fa-download me-2"></i>Download Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Range Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row align-items-end">
+                    <div class="col-md-3">
+                        <label for="days" class="form-label">Time Period</label>
+                        <select class="form-select" id="days" name="days" onchange="this.form.submit()">
+                            <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+                            <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+                            <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+                            <option value="365" {% if days == 365 %}selected{% endif %}>Last year</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ new_users }}</h4>
+                        <small>New Users</small>
+                    </div>
+                    <i class="fas fa-user-plus fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ new_swaps }}</h4>
+                        <small>New Swaps</small>
+                    </div>
+                    <i class="fas fa-exchange-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ completed_swaps }}</h4>
+                        <small>Completed Swaps</small>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ "%.1f"|format((completed_swaps / new_swaps * 100) if new_swaps > 0 else 0) }}%</h4>
+                        <small>Completion Rate</small>
+                    </div>
+                    <i class="fas fa-percentage fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Skills -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Skills</h5>
+            </div>
+            <div class="card-body">
+                {% if top_skills %}
+                    <div class="list-group list-group-flush">
+                        {% for skill, count in top_skills %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ skill }}</h6>
+                                    <small class="text-muted">{{ count }} users</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No skill data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Platform Insights</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-primary mb-1">{{ new_users }}</h4>
+                            <small class="text-muted">New Users</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-success mb-1">{{ new_swaps }}</h4>
+                            <small class="text-muted">New Swaps</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-warning mb-1">{{ completed_swaps }}</h4>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-info mb-1">{{ "%.1f"|format((completed_swaps / new_swaps * 100) if new_swaps > 0 else 0) }}%</h4>
+                            <small class="text-muted">Success Rate</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Growth Trends:</h6>
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <i class="fas fa-arrow-up text-success me-2"></i>
+                        User registrations: {{ new_users }} in {{ days }} days
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-arrow-up text-success me-2"></i>
+                        Swap requests: {{ new_swaps }} in {{ days }} days
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-arrow-up text-success me-2"></i>
+                        Completed swaps: {{ completed_swaps }} in {{ days }} days
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Reports -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Detailed Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=users" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-users me-2"></i>Users Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=swaps" class="btn btn-outline-success w-100">
+                            <i class="fas fa-exchange-alt me-2"></i>Swaps Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=feedback" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-star me-2"></i>Feedback Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.reports') }}?type=activity" class="btn btn-outline-info w-100">
+                            <i class="fas fa-chart-bar me-2"></i>Activity Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh analytics every 60 seconds
+setInterval(function() {
+    location.reload();
+}, 60000);
+</script>
+{% endblock %} 

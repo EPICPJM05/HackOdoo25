@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Send Platform Messages - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-bullhorn me-2"></i>Send Platform Messages</h2>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send Message</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.send_platform_message') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Message Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="e.g., Platform Maintenance, New Features Available" required>
+                        <div class="form-text">Keep it concise and clear</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Message Type</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="info">Information</option>
+                            <option value="warning">Warning</option>
+                            <option value="success">Success</option>
+                            <option value="danger">Alert</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message Content *</label>
+                        <textarea class="form-control" id="message" name="message" rows="6" 
+                                  placeholder="Enter your message here..." required></textarea>
+                        <div class="form-text">This message will be sent to all active users</div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> This message will be sent to all active users immediately. 
+                        Please review your message carefully before sending.
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="previewMessage()">
+                            <i class="fas fa-eye me-2"></i>Preview
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Message Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <h6>Message Types:</h6>
+                <ul class="list-unstyled">
+                    <li><span class="badge bg-info">Information</span> - General updates, announcements</li>
+                    <li><span class="badge bg-warning">Warning</span> - Important notices, maintenance</li>
+                    <li><span class="badge bg-success">Success</span> - Positive updates, achievements</li>
+                    <li><span class="badge bg-danger">Alert</span> - Critical issues, urgent notices</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Best Practices:</h6>
+                <ul class="small">
+                    <li>Keep titles short and clear</li>
+                    <li>Use appropriate message types</li>
+                    <li>Be concise but informative</li>
+                    <li>Include relevant details</li>
+                    <li>Test with preview before sending</li>
+                </ul>
+                
+                <hr>
+                
+                <h6>Recent Messages:</h6>
+                <div class="small text-muted">
+                    <p>No recent messages</p>
+                    <!-- Future: Display recent messages here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Message Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="preview-content">
+                    <!-- Preview content will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewMessage() {
+    const title = document.getElementById('title').value;
+    const message = document.getElementById('message').value;
+    const type = document.getElementById('type').value;
+    
+    if (!title || !message) {
+        alert('Please fill in both title and message before previewing.');
+        return;
+    }
+    
+    const typeClass = {
+        'info': 'bg-info',
+        'warning': 'bg-warning',
+        'success': 'bg-success',
+        'danger': 'bg-danger'
+    }[type] || 'bg-info';
+    
+    const typeText = {
+        'info': 'Information',
+        'warning': 'Warning',
+        'success': 'Success',
+        'danger': 'Alert'
+    }[type] || 'Information';
+    
+    const previewHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <h6 class="alert-heading mb-1">${title}</h6>
+                    <p class="mb-0">${message}</p>
+                    <small class="text-muted">Platform Message • ${new Date().toLocaleString()}</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('preview-content').innerHTML = previewHtml;
+    
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+</script>
+{% endblock %} 
