@@ -13,9 +13,13 @@ def admin_required(f):
     """Decorator to require admin access"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print(f"Admin required check - Current user: {current_user}")
+        print(f"Current user authenticated: {current_user.is_authenticated}")
+        print(f"Current user has role: {hasattr(current_user, 'role') if current_user.is_authenticated else 'N/A'}")
+        
         if not current_user.is_authenticated or not hasattr(current_user, 'role'):
             flash('Admin access required', 'error')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -23,6 +27,9 @@ def admin_required(f):
 @admin_required
 def dashboard():
     """Admin dashboard"""
+    print("Admin dashboard accessed successfully!")
+    print(f"Current user: {current_user}")
+    print(f"User role: {current_user.role if hasattr(current_user, 'role') else 'None'}")
     # Get statistics
     total_users = User.query.count()
     active_users = User.query.filter_by(is_banned=False).count()
@@ -212,6 +219,7 @@ def send_platform_message():
     
     # Emit to all connected users
     from .. import socketio
+    print("Emitting platform_message to all users")
     socketio.emit('platform_message', {
         'title': title,
         'message': message,
@@ -291,6 +299,12 @@ def analytics():
                          new_swaps=new_swaps,
                          completed_swaps=completed_swaps,
                          top_skills=top_skills)
+
+@admin_bp.route('/admin/profile')
+@admin_required
+def admin_profile():
+    """Admin profile page"""
+    return render_template('admin/admin_profile.html', admin=current_user)
 
 def generate_users_report():
     """Generate users report"""

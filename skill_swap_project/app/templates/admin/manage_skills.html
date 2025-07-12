@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Skills - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Skills</h2>
+    <form class="row g-3 mb-3" method="get">
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="search" placeholder="Search by skill name" value="{{ search or '' }}">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" name="status">
+                <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+                <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Search</button>
+        </div>
+    </form>
+    {% if skills.items %}
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for skill in skills.items %}
+            <tr>
+                <td>{{ skill.id }}</td>
+                <td>{{ skill.name }}</td>
+                <td>{{ skill.description|truncate(50) }}</td>
+                <td>
+                    {% if skill.is_approved %}
+                        <span class="badge bg-success">Approved</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% endif %}
+                </td>
+                <td>{{ skill.created_at.strftime('%Y-%m-%d') if skill.created_at else '' }}</td>
+                <td>
+                    {% if not skill.is_approved %}
+                    <form method="post" action="{{ url_for('admin.approve_skill', skill_id=skill.id) }}" style="display:inline-block">
+                        <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this skill?')"><i class="fas fa-check"></i> Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('admin.reject_skill', skill_id=skill.id) }}" style="display:inline-block">
+                        <input type="hidden" name="reason" value="Inappropriate or spammy content">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this skill?')"><i class="fas fa-times"></i> Reject</button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">No actions</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <nav>
+        <ul class="pagination">
+            {% if skills.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin.manage_skills', page=skills.prev_num, search=search, status=status) }}">Previous</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+            <li class="page-item disabled"><span class="page-link">Page {{ skills.page }} of {{ skills.pages }}</span></li>
+            {% if skills.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('admin.manage_skills', page=skills.next_num, search=search, status=status) }}">Next</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <p>No skills found.</p>
+    {% endif %}
+</div>
+{% endblock %} 

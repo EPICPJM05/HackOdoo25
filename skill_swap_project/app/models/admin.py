@@ -64,3 +64,6 @@ class Admin(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<Admin {self.email}>' 
+
+    def get_id(self):
+        return f"admin-{self.id}" 

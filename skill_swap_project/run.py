@@ -18,5 +18,5 @@ if __name__ == '__main__':
     # Run the application
     socketio.run(app, 
                 host='0.0.0.0', 
-                port=int(os.environ.get('PORT', 5001)),
+                port=int(os.environ.get('PORT', 5005)),
                 debug=os.getenv('FLASK_ENV') == 'development') 

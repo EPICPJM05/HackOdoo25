@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from ..models import SwapRequest, User, UserSkill, Feedback
 from .. import db, socketio
 from datetime import datetime
+from flask_socketio import join_room, leave_room
 
 swaps_bp = Blueprint('swaps', __name__)
 
@@ -29,7 +30,8 @@ def my_swaps():
                          pending_sent=pending_sent,
                          active_swaps=active_swaps,
                          completed_swaps=completed_swaps,
-                         all_swaps=all_swaps)
+                         all_swaps=all_swaps,
+                         Feedback=Feedback)
 
 @swaps_bp.route('/swap/request', methods=['POST'])
 @login_required
@@ -272,16 +274,16 @@ def get_active_count():
     return jsonify({'count': count})
 
 @socketio.on('connect')
-def handle_connect():
+def handle_connect(auth):
     """Handle WebSocket connection"""
     if current_user.is_authenticated:
-        socketio.join_room(f'user_{current_user.id}')
+        join_room(f'user_{current_user.id}')
 
 @socketio.on('disconnect')
-def handle_disconnect():
+def handle_disconnect(auth):
     """Handle WebSocket disconnection"""
     if current_user.is_authenticated:
-        socketio.leave_room(f'user_{current_user.id}')
+        leave_room(f'user_{current_user.id}')
 
 # Chat routes
 @swaps_bp.route('/swap/<int:swap_id>/chat')

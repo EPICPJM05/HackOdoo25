@@ -142,8 +142,10 @@ def admin_login():
             print("Redirecting admin user to dashboard")
             return redirect(url_for('admin.dashboard'))
         else:  # Regular user
-            print("Redirecting regular user to profile")
-            return redirect(url_for('users.profile'))
+            print("Logging out regular user and redirecting to admin login")
+            logout_user()
+            flash('You were logged out from your user account. Please log in as admin.', 'info')
+            return redirect(url_for('auth.admin_login'))
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -157,16 +159,23 @@ def admin_login():
         
         admin = Admin.query.filter_by(email=email, is_active=True).first()
         print(f"Admin found: {admin is not None}")  # Debug
+        print(f"Admin email: {admin.email if admin else 'None'}")  # Debug
+        print(f"Admin role: {admin.role if admin else 'None'}")  # Debug
+        print(f"Admin is_active: {admin.is_active if admin else 'None'}")  # Debug
         
         if admin and admin.check_password(password):
             print("Admin password check passed")  # Debug
+            print("About to login user...")  # Debug
             login_user(admin)
+            print("User logged in successfully")  # Debug
             admin.update_last_login()
             flash('Welcome back, Administrator!', 'success')
             print("Redirecting to admin dashboard")  # Debug
             return redirect(url_for('admin.dashboard'))
         else:
             print("Admin login failed")  # Debug
+            if admin:
+                print(f"Password check failed for admin: {admin.email}")  # Debug
             flash('Invalid admin credentials', 'error')
             return render_template('auth/admin_login.html', email=email)
     
