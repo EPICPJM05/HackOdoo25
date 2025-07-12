@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name }} - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Header -->
+    <div class="col-12">
+        <div class="profile-header rounded mb-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        {% if user.photo_url %}
+                            <img src="{{ user.photo_url }}" alt="Profile Photo" class="profile-avatar">
+                        {% else %}
+                            <div class="profile-avatar bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h1 class="text-white mb-2">{{ user.name }}</h1>
+                        {% if user.location %}
+                            <p class="text-white-50 mb-2">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ user.location }}
+                            </p>
+                        {% endif %}
+                        <p class="text-white-50 mb-3">
+                            <i class="fas fa-clock me-2"></i>Available: {{ user.availability|title }}
+                        </p>
+                        
+                        <!-- Rating Display -->
+                        <div class="mb-3">
+                            <div class="rating">
+                                {% for i in range(5) %}
+                                    <i class="fas fa-star {% if i < avg_rating|int %}text-warning{% endif %}"></i>
+                                {% endfor %}
+                                <span class="text-white-50 ms-2">{{ avg_rating }} out of 5 ({{ rating_count }} reviews)</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            {% if current_user.is_authenticated and current_user.id != user.id %}
+                                {% if can_send_request %}
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#swapRequestModal">
+                                        <i class="fas fa-exchange-alt me-2"></i>Request Swap
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-secondary" disabled>
+                                        <i class="fas fa-clock me-2"></i>Not Available
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                            <a href="{{ url_for('users.search_users') }}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Search
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="col-md-8">
+        <!-- Skills Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>{{ user.name }}'s Skills
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Skills Offered -->
+                <h6 class="text-success mb-3">
+                    <i class="fas fa-hand-holding-heart me-2"></i>Skills Offered
+                </h6>
+                <div class="mb-4">
+                    {% if offered_skills %}
+                        {% for skill in offered_skills %}
+                            <span class="skill-badge offered">
+                                {{ skill.skill_name }}
+                                <small class="text-muted">({{ skill.proficiency_level }})</small>
+                                {% if skill.description %}
+                                    <small class="text-muted d-block">{{ skill.description }}</small>
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No skills offered yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Skills Wanted -->
+                <h6 class="text-warning mb-3">
+                    <i class="fas fa-graduation-cap me-2"></i>Skills Wanted
+                </h6>
+                <div>
+                    {% if wanted_skills %}
+                        {% for skill in wanted_skills %}
+                            <span class="skill-badge wanted">
+                                {{ skill.skill_name }}
+                                <small class="text-muted">({{ skill.proficiency_level }})</small>
+                                {% if skill.description %}
+                                    <small class="text-muted d-block">{{ skill.description }}</small>
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No skills wanted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-center">Activity history will be displayed here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- User Stats -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">User Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ offered_skills|length }}</h4>
+                        <small class="text-muted">Skills Offered</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ wanted_skills|length }}</h4>
+                        <small class="text-muted">Skills Wanted</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Contact Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="fas fa-envelope me-2"></i>
+                    <small class="text-muted">{{ user.email }}</small>
+                </p>
+                {% if user.location %}
+                    <p class="mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <small class="text-muted">{{ user.location }}</small>
+                    </p>
+                {% endif %}
+                <p class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    <small class="text-muted">Member since {{ user.created_at.strftime('%B %Y') }}</small>
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        {% if current_user.is_authenticated and current_user.id != user.id %}
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if can_send_request %}
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#swapRequestModal">
+                                <i class="fas fa-exchange-alt me-2"></i>Request Swap
+                            </button>
+                        {% endif %}
+                        <a href="{{ url_for('users.search_users') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Find More Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Swap Request Modal -->
+{% if current_user.is_authenticated and current_user.id != user.id and can_send_request %}
+<div class="modal fade" id="swapRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Skill Swap</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('swaps.send_swap_request') }}">
+                <div class="modal-body">
+                    <p>Request a skill swap with <strong>{{ user.name }}</strong>:</p>
+                    
+                    <div class="mb-3">
+                        <label for="receiver_skill" class="form-label">Skill you want to learn from {{ user.name }}:</label>
+                        <select class="form-select" id="receiver_skill" name="receiver_skill" required>
+                            <option value="">Select a skill...</option>
+                            {% for skill in offered_skills %}
+                                <option value="{{ skill.skill_name }}">{{ skill.skill_name }} ({{ skill.proficiency_level }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="requester_skill" class="form-label">Skill you can teach {{ user.name }}:</label>
+                        <select class="form-select" id="requester_skill" name="requester_skill" required>
+                            <option value="">Select a skill...</option>
+                            {% for skill in current_user_offered_skills %}
+                                <option value="{{ skill.skill_name }}">{{ skill.skill_name }} ({{ skill.proficiency_level }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message (optional):</label>
+                        <textarea class="form-control" id="message" name="message" rows="3" 
+                                  placeholder="Tell {{ user.name }} why you'd like to swap skills..."></textarea>
+                    </div>
+                    
+                    <input type="hidden" name="receiver_id" value="{{ user.id }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Send Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle swap request form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const swapForm = document.querySelector('#swapRequestModal form');
+    if (swapForm) {
+        swapForm.addEventListener('submit', function(e) {
+            const receiverSkill = document.getElementById('receiver_skill').value;
+            const requesterSkill = document.getElementById('requester_skill').value;
+            
+            if (!receiverSkill || !requesterSkill) {
+                e.preventDefault();
+                alert('Please select both skills for the swap.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

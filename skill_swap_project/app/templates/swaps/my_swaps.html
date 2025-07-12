@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}My Swaps - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-exchange-alt me-2"></i>My Swap Requests
+        </h2>
+    </div>
+</div>
+
+<!-- Pending Requests Received -->
+{% if pending_received %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Pending Requests ({{ pending_received|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for swap in pending_received %}
+                <div class="swap-card mb-3 p-3 border rounded">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">
+                                <i class="fas fa-user me-2"></i>{{ swap.requester.name }} wants to swap with you
+                            </h6>
+                            <p class="mb-2">
+                                <strong>{{ swap.requester.name }}</strong> offers: 
+                                <span class="badge bg-success">{{ swap.requester_skill }}</span>
+                                <br>
+                                <strong>You</strong> offer: 
+                                <span class="badge bg-primary">{{ swap.receiver_skill }}</span>
+                            </p>
+                            {% if swap.message %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-comment me-1"></i>{{ swap.message }}
+                                </p>
+                            {% endif %}
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Requested on {{ swap.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group" role="group">
+                                <form method="POST" action="{{ url_for('swaps.accept_swap', swap_id=swap.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-check me-1"></i>Accept
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('swaps.reject_swap', swap_id=swap.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                            onclick="return confirm('Are you sure you want to reject this swap request?')">
+                                        <i class="fas fa-times me-1"></i>Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Pending Requests Sent -->
+{% if pending_sent %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-paper-plane me-2"></i>Requests You Sent ({{ pending_sent|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for swap in pending_sent %}
+                <div class="swap-card mb-3 p-3 border rounded">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">
+                                <i class="fas fa-user me-2"></i>You want to swap with {{ swap.receiver.name }}
+                            </h6>
+                            <p class="mb-2">
+                                <strong>You</strong> offer: 
+                                <span class="badge bg-success">{{ swap.requester_skill }}</span>
+                                <br>
+                                <strong>{{ swap.receiver.name }}</strong> offers: 
+                                <span class="badge bg-primary">{{ swap.receiver_skill }}</span>
+                            </p>
+                            {% if swap.message %}
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-comment me-1"></i>{{ swap.message }}
+                                </p>
+                            {% endif %}
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Sent on {{ swap.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form method="POST" action="{{ url_for('swaps.cancel_swap', swap_id=swap.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-warning btn-sm" 
+                                        onclick="return confirm('Are you sure you want to cancel this swap request?')">
+                                    <i class="fas fa-ban me-1"></i>Cancel
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Active Swaps -->
+{% if active_swaps %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-play me-2"></i>Active Swaps ({{ active_swaps|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for swap in active_swaps %}
+                <div class="swap-card mb-3 p-3 border rounded">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">
+                                <i class="fas fa-exchange-alt me-2"></i>Active swap with 
+                                {% if swap.requester_id == current_user.id %}
+                                    {{ swap.receiver.name }}
+                                {% else %}
+                                    {{ swap.requester.name }}
+                                {% endif %}
+                            </h6>
+                            <p class="mb-2">
+                                <strong>{{ swap.requester.name }}</strong> offers: 
+                                <span class="badge bg-success">{{ swap.requester_skill }}</span>
+                                <br>
+                                <strong>{{ swap.receiver.name }}</strong> offers: 
+                                <span class="badge bg-primary">{{ swap.receiver_skill }}</span>
+                            </p>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Started on {{ swap.updated_at.strftime('%B %d, %Y') }}
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('swaps.view_swap', swap_id=swap.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                            <form method="POST" action="{{ url_for('swaps.complete_swap', swap_id=swap.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm" 
+                                        onclick="return confirm('Mark this swap as completed?')">
+                                    <i class="fas fa-check-double me-1"></i>Complete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Completed Swaps -->
+{% if completed_swaps %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>Completed Swaps ({{ completed_swaps|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for swap in completed_swaps %}
+                <div class="swap-card mb-3 p-3 border rounded">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">
+                                <i class="fas fa-check me-2"></i>Completed swap with 
+                                {% if swap.requester_id == current_user.id %}
+                                    {{ swap.receiver.name }}
+                                {% else %}
+                                    {{ swap.requester.name }}
+                                {% endif %}
+                            </h6>
+                            <p class="mb-2">
+                                <strong>{{ swap.requester.name }}</strong> offered: 
+                                <span class="badge bg-success">{{ swap.requester_skill }}</span>
+                                <br>
+                                <strong>{{ swap.receiver.name }}</strong> offered: 
+                                <span class="badge bg-primary">{{ swap.receiver_skill }}</span>
+                            </p>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Completed on {{ swap.completed_at.strftime('%B %d, %Y') }}
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('swaps.view_swap', swap_id=swap.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- No Swaps Message -->
+{% if not pending_received and not pending_sent and not active_swaps and not completed_swaps %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Swap Requests Yet</h5>
+                <p class="text-muted">You haven't made or received any swap requests yet.</p>
+                <a href="{{ url_for('users.search_users') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Find Users to Swap With
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh pending count
+function updatePendingCount() {
+    fetch('/api/swaps/pending-count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('pending-count');
+            if (badge) {
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        });
+}
+
+// Update count every 30 seconds
+setInterval(updatePendingCount, 30000);
+
+// Update on page load
+document.addEventListener('DOMContentLoaded', updatePendingCount);
+</script>
+{% endblock %} 

@@ -101,10 +101,19 @@ def add_skill():
         flash('Invalid skill type', 'error')
         return redirect(url_for('users.profile'))
     
+    # Find or create the skill
+    from ..models.skill import Skill
+    skill = Skill.query.filter_by(name=skill_name).first()
+    if not skill:
+        # Create new skill
+        skill = Skill(name=skill_name, description=description)
+        db.session.add(skill)
+        db.session.flush()  # Get the ID without committing
+    
     # Check if skill already exists for this user
     existing_skill = UserSkill.query.filter_by(
         user_id=current_user.id,
-        skill_name=skill_name,
+        skill_id=skill.id,
         skill_type=skill_type
     ).first()
     
@@ -115,6 +124,7 @@ def add_skill():
     # Create new user skill
     user_skill = UserSkill(
         user_id=current_user.id,
+        skill_id=skill.id,
         skill_name=skill_name,
         skill_type=skill_type,
         description=description if description else None,
@@ -223,7 +233,12 @@ def view_user(user_id):
     
     # Check if current user can send swap request
     can_send_request = False
+    current_user_offered_skills = []
+    
     if current_user.is_authenticated and current_user.id != user.id:
+        # Get current user's offered skills for swap request form
+        current_user_offered_skills = UserSkill.get_user_offered_skills(current_user.id)
+        
         # Check if user is available for swaps
         can_send_request = user.is_available_for_swaps()
         
@@ -243,7 +258,8 @@ def view_user(user_id):
                          wanted_skills=wanted_skills,
                          avg_rating=avg_rating,
                          rating_count=rating_count,
-                         can_send_request=can_send_request)
+                         can_send_request=can_send_request,
+                         current_user_offered_skills=current_user_offered_skills)
 
 # API endpoints
 @users_bp.route('/api/skills/search', methods=['POST'])
@@ -269,4 +285,29 @@ def get_user_skills(user_id):
     return jsonify({
         'offered': [skill.skill_name for skill in offered_skills],
         'wanted': [skill.skill_name for skill in wanted_skills]
-    }) 
+    })
+
+@users_bp.route('/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    """Delete user account"""
+    # Get all related data to delete
+    from ..models import SwapRequest, Feedback, UserSkill
+    
+    # Delete swap requests
+    SwapRequest.query.filter_by(requester_id=current_user.id).delete()
+    SwapRequest.query.filter_by(receiver_id=current_user.id).delete()
+    
+    # Delete feedback
+    Feedback.query.filter_by(reviewer_id=current_user.id).delete()
+    Feedback.query.filter_by(reviewed_user_id=current_user.id).delete()
+    
+    # Delete user skills
+    UserSkill.query.filter_by(user_id=current_user.id).delete()
+    
+    # Delete the user
+    db.session.delete(current_user)
+    db.session.commit()
+    
+    flash('Your account has been deleted successfully.', 'success')
+    return redirect(url_for('auth.login')) 
