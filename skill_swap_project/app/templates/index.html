@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section bg-primary text-white py-5 rounded">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Exchange Skills, Grow Together</h1>
+                <p class="lead mb-4">Connect with people who have the skills you need and offer your expertise in return. Build meaningful relationships while learning and teaching.</p>
+                {% if not current_user.is_authenticated %}
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a href="{{ url_for('users.search_users') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-search me-2"></i>Browse Skills
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('users.search_users') }}" class="btn btn-light btn-lg">
+                            <i class="fas fa-search me-2"></i>Find Skills
+                        </a>
+                        <a href="{{ url_for('users.profile') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-user me-2"></i>My Profile
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-exchange-alt display-1 text-light opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Connect with Others</h5>
+                <p class="card-text">Find people with the skills you need and connect with them through our platform.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Learn & Teach</h5>
+                <p class="card-text">Share your expertise and learn from others in a mutually beneficial exchange.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Build Trust</h5>
+                <p class="card-text">Rate and review your swap partners to build a trusted community.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="text-center mb-5">How It Works</h2>
+    </div>
+    <div class="col-md-3 text-center mb-4">
+        <div class="step-circle bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold">1</span>
+        </div>
+        <h5>Create Profile</h5>
+        <p class="text-muted">Sign up and list the skills you offer and want to learn.</p>
+    </div>
+    <div class="col-md-3 text-center mb-4">
+        <div class="step-circle bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold">2</span>
+        </div>
+        <h5>Find Matches</h5>
+        <p class="text-muted">Search for people with the skills you need.</p>
+    </div>
+    <div class="col-md-3 text-center mb-4">
+        <div class="step-circle bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold">3</span>
+        </div>
+        <h5>Send Request</h5>
+        <p class="text-muted">Propose a skill swap with someone.</p>
+    </div>
+    <div class="col-md-3 text-center mb-4">
+        <div class="step-circle bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <span class="fw-bold">4</span>
+        </div>
+        <h5>Exchange Skills</h5>
+        <p class="text-muted">Meet up and exchange your knowledge.</p>
+    </div>
+</div>
+
+<!-- Popular Skills Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Popular Skills</h2>
+        <div class="row">
+            <div class="col-md-2 col-4 mb-3">
+                <div class="skill-badge bg-light p-3 rounded text-center">
+                    <i class="fas fa-code fa-2x text-primary mb-2"></i>
+                    <h6>Programming</h6>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="skill-badge bg-light p-3 rounded text-center">
+                    <i class="fas fa-language fa-2x text-success mb-2"></i>
+                    <h6>Languages</h6>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="skill-badge bg-light p-3 rounded text-center">
+                    <i class="fas fa-palette fa-2x text-warning mb-2"></i>
+                    <h6>Design</h6>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="skill-badge bg-light p-3 rounded text-center">
+                    <i class="fas fa-music fa-2x text-info mb-2"></i>
+                    <h6>Music</h6>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="skill-badge bg-light p-3 rounded text-center">
+                    <i class="fas fa-utensils fa-2x text-danger mb-2"></i>
+                    <h6>Cooking</h6>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mb-3">
+                <div class="skill-badge bg-light p-3 rounded text-center">
+                    <i class="fas fa-dumbbell fa-2x text-secondary mb-2"></i>
+                    <h6>Fitness</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="bg-light p-5 rounded text-center">
+            <h3>Ready to Start Swapping Skills?</h3>
+            <p class="lead mb-4">Join our community and start learning from others while sharing your expertise.</p>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Join Now
+                </a>
+            {% else %}
+                <a href="{{ url_for('users.search_users') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>Find Skills
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.step-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+}
+
+.skill-badge {
+    transition: transform 0.2s;
+}
+
+.skill-badge:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %} 
