@@ -30,7 +30,8 @@ def my_swaps():
                          pending_sent=pending_sent,
                          active_swaps=active_swaps,
                          completed_swaps=completed_swaps,
-                         all_swaps=all_swaps)
+                         all_swaps=all_swaps,
+                         Feedback=Feedback)
 
 @swaps_bp.route('/swap/request', methods=['POST'])
 @login_required

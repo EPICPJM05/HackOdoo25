@@ -251,6 +251,9 @@ def view_user(user_id):
     avg_rating = Feedback.get_user_average_rating(user.id)
     rating_count = Feedback.get_user_rating_count(user.id)
     
+    # Get all feedback for this user
+    feedback_list = Feedback.get_user_feedback(user.id)
+    
     # Check if current user can send swap request
     can_send_request = False
     current_user_offered_skills = []
@@ -279,7 +282,8 @@ def view_user(user_id):
                          avg_rating=avg_rating,
                          rating_count=rating_count,
                          can_send_request=can_send_request,
-                         current_user_offered_skills=current_user_offered_skills)
+                         current_user_offered_skills=current_user_offered_skills,
+                         feedback_list=feedback_list)
 
 # API endpoints
 @users_bp.route('/api/skills/search', methods=['POST'])

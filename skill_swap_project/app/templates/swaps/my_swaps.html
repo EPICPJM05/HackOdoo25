@@ -212,6 +212,13 @@
                             <a href="{{ url_for('swaps.view_swap', swap_id=swap.id) }}" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-1"></i>View Details
                             </a>
+                            {% if Feedback.can_user_rate_swap(current_user.id, swap.id) %}
+                            <button class="btn btn-warning btn-sm ms-2 leave-feedback-btn" 
+                                    data-swap-id="{{ swap.id }}" 
+                                    data-swap-user="{% if swap.requester_id == current_user.id %}{{ swap.receiver.name }}{% else %}{{ swap.requester.name }}{% endif %}">
+                                <i class="fas fa-star me-1"></i>Leave Feedback
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -221,6 +228,39 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Single Feedback Modal (placed once at the end) -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="feedbackForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feedbackModalLabel">Leave Feedback</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label d-block">Rating</label>
+                        <div class="star-rating" id="modal-star-rating">
+                            {% for i in range(1, 6) %}
+                            <span class="star" data-value="{{ i }}" style="font-size:1.5rem; color:#ccc; cursor:pointer;"><i class="fas fa-star"></i></span>
+                            {% endfor %}
+                            <input type="hidden" name="rating" id="modal-rating" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal-comment" class="form-label">Comment (optional)</label>
+                        <textarea class="form-control" id="modal-comment" name="comment" rows="3" maxlength="500"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- No Swaps Message -->
 {% if not pending_received and not pending_sent and not active_swaps and not completed_swaps %}
@@ -243,27 +283,55 @@
 
 {% block extra_js %}
 <script>
-// Auto-refresh pending count
-function updatePendingCount() {
-    fetch('/api/swaps/pending-count')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.getElementById('pending-count');
-            if (badge) {
-                if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'inline';
-                } else {
-                    badge.style.display = 'none';
-                }
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle opening the feedback modal and populating it
+    document.querySelectorAll('.leave-feedback-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var swapId = this.getAttribute('data-swap-id');
+            var swapUser = this.getAttribute('data-swap-user');
+            // Set form action
+            var form = document.getElementById('feedbackForm');
+            form.action = '/feedback/' + swapId + '/add';
+            // Reset form fields
+            document.getElementById('modal-rating').value = '';
+            document.getElementById('modal-comment').value = '';
+            // Reset star colors
+            highlightStars(document.querySelectorAll('#modal-star-rating .star'), -1);
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+            modal.show();
+        });
+    });
+    // Star rating logic for the modal
+    var stars = document.querySelectorAll('#modal-star-rating .star');
+    var input = document.getElementById('modal-rating');
+    var selected = -1;
+    stars.forEach(function(star, idx) {
+        star.addEventListener('mouseenter', function(e) {
+            highlightStars(stars, idx);
+        });
+        star.addEventListener('mouseleave', function(e) {
+            highlightStars(stars, selected);
+        });
+        star.addEventListener('click', function(e) {
+            e.preventDefault();
+            selected = idx;
+            input.value = idx + 1;
+            highlightStars(stars, selected);
+        });
+    });
+    document.getElementById('modal-star-rating').addEventListener('mouseleave', function() {
+        highlightStars(stars, selected);
+    });
+    function highlightStars(stars, idx) {
+        stars.forEach(function(star, i) {
+            if (i <= idx) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#ccc';
             }
         });
-}
-
-// Update count every 30 seconds
-setInterval(updatePendingCount, 30000);
-
-// Update on page load
-document.addEventListener('DOMContentLoaded', updatePendingCount);
+    }
+});
 </script>
 {% endblock %} 
