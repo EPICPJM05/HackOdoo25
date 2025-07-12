@@ -2,6 +2,13 @@
 
 A full-stack web application for exchanging skills and knowledge between users. Built with Flask, SQLAlchemy, and Bootstrap.
 
+## Team Name - Solvers
+### Members: 
+Poojan Mehta - poojan.mehta2005@gmail.com
+Namra Parikh - namraparikh710@gmail.com
+Parshv Mehta - parshvmehta7000@gmail.com
+Harshit Dave - harshitbbdave@gmail.com
+
 ## 🚀 Features
 
 ### User Features
