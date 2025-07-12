@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Search Skills - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-search me-2"></i>Search Skills</h2>
+            
+            <!-- Search Form -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('search') }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="text" class="form-control form-control-lg" 
+                                       name="q" value="{{ query or '' }}" 
+                                       placeholder="Search for skills (e.g., Python, Guitar, Spanish, Photoshop)">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Search Results -->
+            {% if query %}
+                <h4 class="mb-3">Search Results for "{{ query }}"</h4>
+                
+                {% if results %}
+                    <div class="row">
+                        {% for user in results %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        {% if user.photo_url %}
+                                            <img src="{{ url_for('static', filename=user.photo_url) }}" 
+                                                 alt="Profile Photo" class="profile-photo mb-3" style="width: 100px; height: 100px;">
+                                        {% else %}
+                                            <i class="fas fa-user-circle fa-4x text-muted mb-3"></i>
+                                        {% endif %}
+                                        
+                                        <h5 class="card-title">{{ user.name }}</h5>
+                                        
+                                        {% if user.location %}
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
+                                            </p>
+                                        {% endif %}
+                                        
+                                        {% if user.availability %}
+                                            <p class="text-muted mb-3">
+                                                <i class="fas fa-clock me-1"></i>{{ user.availability }}
+                                            </p>
+                                        {% endif %}
+                                        
+                                        {% if user.skills_offered %}
+                                            <div class="mb-3">
+                                                <small class="text-muted d-block mb-1">Skills Offered:</small>
+                                                {% for skill in user.skills_offered.split(',') %}
+                                                    <span class="skill-badge">{{ skill.strip() }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="d-grid gap-2">
+                                            <a href="{{ url_for('profile', user_id=user.id) }}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View Profile
+                                            </a>
+                                            {% if 'user_id' in session and session.user_id != user.id %}
+                                                <form method="POST" action="{{ url_for('send_swap_request', receiver_id=user.id) }}" style="display: inline;">
+                                                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                                                        <i class="fas fa-exchange-alt me-1"></i>Send Swap Request
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4>No results found</h4>
+                        <p class="text-muted">Try searching for different skills or check your spelling.</p>
+                    </div>
+                {% endif %}
+            {% else %}
+                <!-- Popular Skills Suggestions -->
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="mb-3">Popular Skills to Search</h4>
+                        <div class="row g-3">
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Python') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-code fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Python</h6>
+                                            <p class="card-text small text-muted">Programming Language</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Guitar') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-music fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Guitar</h6>
+                                            <p class="card-text small text-muted">Musical Instrument</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Spanish') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-language fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Spanish</h6>
+                                            <p class="card-text small text-muted">Language Learning</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Photoshop') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-palette fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Photoshop</h6>
+                                            <p class="card-text small text-muted">Graphic Design</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Cooking') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-utensils fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Cooking</h6>
+                                            <p class="card-text small text-muted">Culinary Arts</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Yoga') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-spa fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Yoga</h6>
+                                            <p class="card-text small text-muted">Fitness & Wellness</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Photography') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-camera fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Photography</h6>
+                                            <p class="card-text small text-muted">Visual Arts</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <a href="{{ url_for('search', q='Excel') }}" class="text-decoration-none">
+                                    <div class="card text-center h-100">
+                                        <div class="card-body">
+                                            <i class="fas fa-table fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Excel</h6>
+                                            <p class="card-text small text-muted">Data Analysis</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

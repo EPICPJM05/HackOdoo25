@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Gradient Background and Animation -->
+<section class="hero-section bg-gradient-primary position-relative" style="padding: 4.5rem 0 2.5rem 0; min-height: 420px; overflow: hidden;">
+    <div id="particles-js" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"></div>
+    <div class="container position-relative" style="z-index:2;">
+        <div class="row align-items-center" style="min-height:320px;">
+            <div class="col-lg-6 pe-lg-5 d-flex flex-column justify-content-center" style="min-height:320px;">
+                <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInDown">Swap Skills, Grow Together</h1>
+                <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s">Connect with people who have the skills you want to learn, and share your expertise with others. Build meaningful connections while expanding your knowledge.</p>
+                {% if 'user_id' not in session %}
+                <div class="d-flex gap-3 animate__animated animate__fadeIn animate__delay-2s">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4 py-3 shadow-sm">Get Started</a>
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-light btn-lg px-4 py-3">Browse Skills</a>
+                </div>
+                {% else %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg px-4 py-3 shadow-sm animate__animated animate__fadeIn animate__delay-2s">Go to Dashboard</a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center animate__animated animate__fadeIn d-flex align-items-center justify-content-center" style="min-height:320px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3652/3652191.png" alt="Skill Swap Illustration" class="img-fluid" style="max-height: 320px;">
+            </div>
+        </div>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" class="wave-divider" style="position:absolute;bottom:0;left:0;width:100%;height:80px;z-index:2;"><path fill="#fff" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
+</section>
+
+<!-- Features Section with Hover Effects -->
+<section class="py-6 bg-white">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold display-5 mb-3">How It Works</h2>
+                <p class="lead text-muted">Simple steps to start your skill swapping journey</p>
+                <div class="divider mx-auto bg-primary"></div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4 border-0 shadow-sm hover-translate">
+                    <div class="card-body">
+                        <div class="icon-box bg-primary-soft mb-4">
+                            <i class="fas fa-user-plus fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="card-title mb-3">1. Create Profile</h5>
+                        <p class="card-text text-muted">Sign up and create your profile. List the skills you can offer and the skills you want to learn.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4 border-0 shadow-sm hover-translate">
+                    <div class="card-body">
+                        <div class="icon-box bg-primary-soft mb-4">
+                            <i class="fas fa-search fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="card-title mb-3">2. Find Matches</h5>
+                        <p class="card-text text-muted">Search for people with the skills you want to learn and browse their profiles.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4 border-0 shadow-sm hover-translate">
+                    <div class="card-body">
+                        <div class="icon-box bg-primary-soft mb-4">
+                            <i class="fas fa-handshake fa-2x text-primary"></i>
+                        </div>
+                        <h5 class="card-title mb-3">3. Start Swapping</h5>
+                        <p class="card-text text-muted">Send swap requests, connect with others, and start learning from each other.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Skills Section with Animated Cards -->
+<section class="py-6 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold display-5 mb-3">Popular Skills</h2>
+                <p class="lead text-muted">Discover what skills are in high demand</p>
+                <div class="divider mx-auto bg-primary"></div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center border-0 shadow-hover">
+                    <div class="card-body p-4">
+                        <div class="icon-box bg-primary-soft mb-3 mx-auto">
+                            <i class="fas fa-code fa-2x text-primary"></i>
+                        </div>
+                        <h6 class="card-title mb-2">Programming</h6>
+                        <p class="card-text small text-muted">Python, JavaScript, Java</p>
+                        <span class="badge bg-primary-soft text-primary mt-2">High Demand</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center border-0 shadow-hover">
+                    <div class="card-body p-4">
+                        <div class="icon-box bg-primary-soft mb-3 mx-auto">
+                            <i class="fas fa-palette fa-2x text-primary"></i>
+                        </div>
+                        <h6 class="card-title mb-2">Design</h6>
+                        <p class="card-text small text-muted">Photoshop, Figma, UI/UX</p>
+                        <span class="badge bg-primary-soft text-primary mt-2">Trending</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center border-0 shadow-hover">
+                    <div class="card-body p-4">
+                        <div class="icon-box bg-primary-soft mb-3 mx-auto">
+                            <i class="fas fa-language fa-2x text-primary"></i>
+                        </div>
+                        <h6 class="card-title mb-2">Languages</h6>
+                        <p class="card-text small text-muted">Spanish, French, Mandarin</p>
+                        <span class="badge bg-primary-soft text-primary mt-2">Popular</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center border-0 shadow-hover">
+                    <div class="card-body p-4">
+                        <div class="icon-box bg-primary-soft mb-3 mx-auto">
+                            <i class="fas fa-music fa-2x text-primary"></i>
+                        </div>
+                        <h6 class="card-title mb-2">Music</h6>
+                        <p class="card-text small text-muted">Guitar, Piano, Singing</p>
+                        <span class="badge bg-primary-soft text-primary mt-2">Creative</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="{{ url_for('search') }}" class="btn btn-outline-primary">Explore All Skills</a>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-6 bg-white">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold display-5 mb-3">What Our Users Say</h2>
+                <p class="lead text-muted">Hear from people who've transformed their skills</p>
+                <div class="divider mx-auto bg-primary"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="owl-carousel testimonials-carousel">
+                    <div class="testimonial-item">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="mb-4">
+                                    <img src="https://randomuser.me/api/portraits/women/32.jpg" class="rounded-circle shadow-sm" width="80" alt="User">
+                                </div>
+                                <p class="lead mb-4">"I learned graphic design while teaching Spanish to my swap partner. This platform changed how I approach learning!"</p>
+                                <h6 class="mb-1">Sarah Johnson</h6>
+                                <p class="small text-muted">Graphic Designer</p>
+                                <div class="rating text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="mb-4">
+                                    <img src="https://randomuser.me/api/portraits/men/45.jpg" class="rounded-circle shadow-sm" width="80" alt="User">
+                                </div>
+                                <p class="lead mb-4">"As a developer, I wanted to improve my public speaking. Found the perfect match who wanted coding lessons!"</p>
+                                <h6 class="mb-1">Michael Chen</h6>
+                                <p class="small text-muted">Software Engineer</p>
+                                <div class="rating text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="mb-4">
+                                    <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle shadow-sm" width="80" alt="User">
+                                </div>
+                                <p class="lead mb-4">"Swapped my photography skills for French lessons. Now I'm fluent and have a new portfolio!"</p>
+                                <h6 class="mb-1">Emma Laurent</h6>
+                                <p class="small text-muted">Photographer</p>
+                                <div class="rating text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-6 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-sm-6">
+                <div class="counter-item">
+                    <h2 class="display-4 fw-bold mb-1" data-count="5000">{{ active_users }}</h2>
+                    <p class="mb-0">Active Users</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="counter-item">
+                    <h2 class="display-4 fw-bold mb-1" data-count="1200">{{ skills_available }}</h2>
+                    <p class="mb-0">Skills Available</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="counter-item">
+                    <h2 class="display-4 fw-bold mb-1" data-count="3500">{{ successful_swaps }}</h2>
+                    <p class="mb-0">Successful Swaps</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="counter-item">
+                    <h2 class="display-4 fw-bold mb-1" data-count="95">{{ avg_rating }}%</h2>
+                    <p class="mb-0">% Satisfaction</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section with Parallax Effect -->
+<section class="py-6 bg-dark text-white position-relative overflow-hidden" style="background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center center/cover no-repeat; background-attachment: fixed;">
+    <div class="overlay bg-dark opacity-75"></div>
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="fw-bold display-5 mb-4">Ready to Start Your Skill Swap Journey?</h2>
+                <p class="lead mb-5">Join thousands of learners and teachers who are already swapping skills and building connections.</p>
+                {% if 'user_id' not in session %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-5 py-3 shadow-lg">Join Now - It's Free!</a>
+                {% else %}
+                <a href="{{ url_for('search') }}" class="btn btn-primary btn-lg px-5 py-3 shadow-lg">Find Skills to Learn</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-6 bg-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="fw-bold mb-4">Stay Updated</h2>
+                <p class="lead text-muted mb-5">Subscribe to our newsletter for tips on skill development and platform updates.</p>
+                <form class="newsletter-form">
+                    <div class="input-group mb-3 shadow-sm rounded-pill">
+                        <input type="email" class="form-control border-0 rounded-pill" placeholder="Your email address" aria-label="Your email address">
+                        <button class="btn btn-primary rounded-pill px-4" type="submit">Subscribe</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Custom CSS for enhanced design */
+    .hero-section {
+        padding: 6rem 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .wave-divider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+    }
+    
+    .wave-divider svg {
+        position: relative;
+        display: block;
+        width: calc(100% + 1.3px);
+        height: 100px;
+    }
+    
+    .icon-box {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto;
+    }
+    
+    .divider {
+        width: 80px;
+        height: 4px;
+        border-radius: 2px;
+    }
+    
+    .hover-translate {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-translate:hover {
+        transform: translateY(-10px);
+    }
+    
+    .shadow-hover {
+        transition: all 0.3s ease;
+    }
+    
+    .shadow-hover:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .testimonials-carousel .owl-item {
+        padding: 15px;
+    }
+    
+    .rating {
+        font-size: 14px;
+    }
+    
+    .counter-item h2 {
+        font-weight: 700;
+    }
+    
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .newsletter-form .form-control {
+        height: 60px;
+        padding-left: 25px;
+    }
+    
+    .newsletter-form .btn {
+        height: 60px;
+        position: relative;
+        right: 5px;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero-section .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .hero-section .d-flex {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Counter-Up/1.0.0/jquery.counterup.min.js"></script>
+
+<script>
+    // Initialize particles.js
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('particles-js')) {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.3,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.2,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+        }
+        
+        // Initialize testimonial carousel
+        $('.testimonials-carousel').owlCarousel({
+            loop: true,
+            margin: 20,
+            nav: false,
+            dots: true,
+            responsive: {
+                0: {
+                    items: 1
+                },
+                768: {
+                    items: 2
+                },
+                992: {
+                    items: 3
+                }
+            }
+        });
+        
+        // Initialize counter animation
+        $('.counter-item h2').counterUp({
+            delay: 10,
+            time: 2000
+        });
+    });
+</script>
+{% endblock %}

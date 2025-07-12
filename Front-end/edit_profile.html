@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" value="{{ user.location or '' }}" placeholder="City, Country">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="availability" class="form-label">Availability</label>
+                            <select class="form-select" id="availability" name="availability">
+                                <option value="">Select availability</option>
+                                <option value="Weekends" {% if user.availability == 'Weekends' %}selected{% endif %}>Weekends</option>
+                                <option value="Evenings" {% if user.availability == 'Evenings' %}selected{% endif %}>Evenings</option>
+                                <option value="Weekdays" {% if user.availability == 'Weekdays' %}selected{% endif %}>Weekdays</option>
+                                <option value="Flexible" {% if user.availability == 'Flexible' %}selected{% endif %}>Flexible</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">Profile Photo</label>
+                            {% if user.photo_url %}
+                                <div class="mb-2">
+                                    <img src="{{ url_for('static', filename=user.photo_url) }}" alt="Current Photo" class="profile-photo" style="width: 100px; height: 100px;">
+                                    <input type="hidden" name="current_photo" value="{{ user.photo_url }}">
+                                </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            <div class="form-text">Upload a new profile picture. Supported formats: JPG, PNG, GIF</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_public" name="is_public" {% if user.is_public %}checked{% endif %}>
+                                <label class="form-check-label" for="is_public">
+                                    Make my profile public
+                                </label>
+                                <div class="form-text">Public profiles can be viewed by other users and appear in search results.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

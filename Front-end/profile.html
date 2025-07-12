@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name }}'s Profile - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Profile Info -->
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    {% if user.photo_url %}
+                        <img src="{{ url_for('static', filename=user.photo_url) }}" alt="Profile Photo" class="profile-photo mb-3">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-6x text-muted mb-3"></i>
+                    {% endif %}
+                    
+                    <h3 class="card-title">{{ user.name }}</h3>
+                    
+                    {% if user.location %}
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if user.availability %}
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-clock me-1"></i>{{ user.availability }}
+                        </p>
+                    {% endif %}
+                    
+                    {% if rating_data and rating_data.avg_rating %}
+                        <div class="mb-3">
+                            <div class="rating-stars">
+                                {% for i in range(5) %}
+                                    {% if i < rating_data.avg_rating|int %}
+                                        <i class="fas fa-star"></i>
+                                    {% elif i < rating_data.avg_rating %}
+                                        <i class="fas fa-star-half-alt"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted">
+                                {{ "%.1f"|format(rating_data.avg_rating) }} ({{ rating_data.total_ratings }} reviews)
+                            </small>
+                        </div>
+                    {% endif %}
+                    
+                    {% if 'user_id' in session and session.user_id != user.id %}
+                        <form method="POST" action="{{ url_for('send_swap_request', receiver_id=user.id) }}">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-exchange-alt me-2"></i>Send Swap Request
+                            </button>
+                        </form>
+                    {% elif 'user_id' in session and session.user_id == user.id %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Connect
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Skills Section -->
+        <div class="col-md-8">
+            <!-- Skills Offered -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gift me-2"></i>Skills Offered
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if skills_offered %}
+                        <div class="row">
+                            {% for skill in skills_offered %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3">
+                                        <h6 class="mb-2">{{ skill.skill_name }}</h6>
+                                        {% if skill.description %}
+                                            <p class="text-muted small mb-0">{{ skill.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No skills offered yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Skills Wanted -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Skills Wanted
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if skills_wanted %}
+                        <div class="row">
+                            {% for skill in skills_wanted %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3">
+                                        <h6 class="mb-2">{{ skill.skill_name }}</h6>
+                                        {% if skill.description %}
+                                            <p class="text-muted small mb-0">{{ skill.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No skills wanted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

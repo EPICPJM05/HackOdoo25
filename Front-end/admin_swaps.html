@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Swap Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-exchange-alt me-2"></i>Swap Management</h2>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Filter by Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Accepted</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i>Filter
+                    </button>
+                    <a href="{{ url_for('admin_swaps') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Swaps Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Swap Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if swaps %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Requester</th>
+                                <th>Receiver</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for swap in swaps %}
+                                <tr>
+                                    <td>{{ swap.id }}</td>
+                                    <td>
+                                        <a href="{{ url_for('profile', user_id=swap.requester_id) }}" 
+                                           class="text-decoration-none" target="_blank">
+                                            {{ swap.requester_name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('profile', user_id=swap.receiver_id) }}" 
+                                           class="text-decoration-none" target="_blank">
+                                            {{ swap.receiver_name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if swap.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif swap.status == 'accepted' %}
+                                            <span class="badge bg-success">Accepted</span>
+                                        {% elif swap.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif swap.status == 'completed' %}
+                                            <span class="badge bg-primary">Completed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ swap.timestamp.strftime('%Y-%m-%d %H:%M') if swap.timestamp else 'N/A' }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#swapDetailsModal"
+                                                    data-swap-id="{{ swap.id }}"
+                                                    data-requester="{{ swap.requester_name }}"
+                                                    data-receiver="{{ swap.receiver_name }}"
+                                                    data-status="{{ swap.status }}"
+                                                    data-date="{{ swap.timestamp.strftime('%Y-%m-%d %H:%M') if swap.timestamp else 'N/A' }}">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted text-center">No swap requests found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Swap Details Modal -->
+<div class="modal fade" id="swapDetailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Swap Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Requester:</strong>
+                        <p id="modal-requester"></p>
+                    </div>
+                    <div class="col-6">
+                        <strong>Receiver:</strong>
+                        <p id="modal-receiver"></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Status:</strong>
+                        <p id="modal-status"></p>
+                    </div>
+                    <div class="col-6">
+                        <strong>Date:</strong>
+                        <p id="modal-date"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle swap details modal
+    const swapDetailsModal = document.getElementById('swapDetailsModal');
+    if (swapDetailsModal) {
+        swapDetailsModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const requester = button.getAttribute('data-requester');
+            const receiver = button.getAttribute('data-receiver');
+            const status = button.getAttribute('data-status');
+            const date = button.getAttribute('data-date');
+            
+            document.getElementById('modal-requester').textContent = requester;
+            document.getElementById('modal-receiver').textContent = receiver;
+            document.getElementById('modal-status').textContent = status;
+            document.getElementById('modal-date').textContent = date;
+        });
+    }
+});
+</script>
+{% endblock %} 

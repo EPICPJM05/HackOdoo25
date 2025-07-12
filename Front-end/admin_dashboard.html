@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h4 class="card-title">{{ total_users }}</h4>
+                    <p class="card-text">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-exchange-alt fa-3x text-success mb-3"></i>
+                    <h4 class="card-title">{{ total_swaps }}</h4>
+                    <p class="card-text">Total Swaps</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-3x text-info mb-3"></i>
+                    <h4 class="card-title">{{ completed_swaps }}</h4>
+                    <p class="card-text">Completed Swaps</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                    <h4 class="card-title">{{ total_feedback }}</h4>
+                    <p class="card-text">Total Feedback</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Actions -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Management</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Manage users, view profiles, and ban inappropriate users.</p>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-primary">
+                        <i class="fas fa-users me-2"></i>Manage Users
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Swap Management</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">View and manage swap requests, filter by status.</p>
+                    <a href="{{ url_for('admin_swaps') }}" class="btn btn-primary">
+                        <i class="fas fa-exchange-alt me-2"></i>Manage Swaps
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reports Section -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reports & Analytics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="d-grid">
+                        <a href="{{ url_for('download_report', report_type='users') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>Download User Activity
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="d-grid">
+                        <a href="{{ url_for('download_report', report_type='swaps') }}" class="btn btn-outline-success">
+                            <i class="fas fa-download me-2"></i>Download Swap Statistics
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="d-grid">
+                        <a href="{{ url_for('download_report', report_type='feedback') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-download me-2"></i>Download Feedback Logs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

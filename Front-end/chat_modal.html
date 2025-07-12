@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Chat - Skill Swap{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header d-flex align-items-center gap-3">
+                    {% if other_user.photo_url %}
+                        <img src="{{ url_for('static', filename=other_user.photo_url) }}" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;border:2px solid #7c3aed;">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-2x text-muted"></i>
+                    {% endif %}
+                    <div>
+                        <div class="fw-bold">Chat with {{ other_user.name }}</div>
+                        <small class="text-muted">Skill Swap Chat</small>
+                    </div>
+                </div>
+                <div class="card-body" style="height:350px;overflow-y:auto;background:#f8fafc;" id="chat-messages">
+                    <!-- Messages will be loaded here -->
+                </div>
+                <div class="card-footer bg-white">
+                    <form id="chat-form" class="d-flex gap-2">
+                        <input type="text" class="form-control" id="chat-input" placeholder="Type your message..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const swapId = {{ swap_id }};
+const chatMessages = document.getElementById('chat-messages');
+const chatForm = document.getElementById('chat-form');
+const chatInput = document.getElementById('chat-input');
+
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function renderMessages(messages) {
+    chatMessages.innerHTML = '';
+    messages.forEach(msg => {
+        const isMe = msg.sender_id === {{ session['user_id'] }};
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'mb-2 d-flex ' + (isMe ? 'justify-content-end' : 'justify-content-start');
+        msgDiv.innerHTML = `
+            <div class="p-2 rounded-3" style="max-width:70%;background:${isMe ? '#6366f1' : '#e0e7ff'};color:${isMe ? '#fff' : '#3730a3'};">
+                <div class="small">${msg.message}</div>
+                <div class="text-end small text-muted mt-1">${msg.name} &middot; ${msg.timestamp.slice(11,16)}</div>
+            </div>
+        `;
+        chatMessages.appendChild(msgDiv);
+    });
+    scrollToBottom();
+}
+
+function fetchMessages() {
+    fetch(`/api/messages/${swapId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.error) renderMessages(data);
+        });
+}
+
+chatForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+    fetch(`/api/send_message/${swapId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `message=${encodeURIComponent(msg)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            chatInput.value = '';
+            fetchMessages();
+        }
+    });
+});
+
+// Poll for new messages every 2 seconds
+setInterval(fetchMessages, 2000);
+fetchMessages();
+</script>
+{% endblock %} 
