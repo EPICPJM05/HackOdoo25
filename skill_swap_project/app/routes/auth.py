@@ -101,15 +101,7 @@ def login():
             flash('Please enter both email and password', 'error')
             return render_template('auth/login.html', email=email)
         
-        # Check if it's an admin login
-        admin = Admin.query.filter_by(email=email, is_active=True).first()
-        if admin and admin.check_password(password):
-            login_user(admin, remember=remember)
-            admin.update_last_login()
-            flash('Welcome back, Administrator!', 'success')
-            return redirect(url_for('admin.dashboard'))
-        
-        # Regular user login
+        # Regular user login only (admin login is handled separately)
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
             if user.is_banned:
@@ -141,30 +133,44 @@ def logout():
 @auth_bp.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     """Admin login"""
+    print(f"Admin login route accessed. Current user: {current_user}")
+    print(f"Current user authenticated: {current_user.is_authenticated}")
+    print(f"Current user has role: {hasattr(current_user, 'role') if current_user.is_authenticated else 'N/A'}")
+    
     if current_user.is_authenticated:
         if hasattr(current_user, 'role'):  # Admin user
+            print("Redirecting admin user to dashboard")
             return redirect(url_for('admin.dashboard'))
         else:  # Regular user
+            print("Redirecting regular user to profile")
             return redirect(url_for('users.profile'))
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         
+        print(f"Admin login attempt: {email}")  # Debug
+        
         if not email or not password:
             flash('Please enter both email and password', 'error')
             return render_template('auth/admin_login.html', email=email)
         
         admin = Admin.query.filter_by(email=email, is_active=True).first()
+        print(f"Admin found: {admin is not None}")  # Debug
+        
         if admin and admin.check_password(password):
+            print("Admin password check passed")  # Debug
             login_user(admin)
             admin.update_last_login()
             flash('Welcome back, Administrator!', 'success')
+            print("Redirecting to admin dashboard")  # Debug
             return redirect(url_for('admin.dashboard'))
         else:
+            print("Admin login failed")  # Debug
             flash('Invalid admin credentials', 'error')
             return render_template('auth/admin_login.html', email=email)
     
+    print("Rendering admin login template")
     return render_template('auth/admin_login.html')
 
 # API endpoints for AJAX requests

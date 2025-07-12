@@ -32,6 +32,10 @@ def create_app(config_name='development'):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
     
+    # Session configuration
+    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
+    
     # Ensure upload directory exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
@@ -63,7 +67,7 @@ def create_app(config_name='development'):
     app.register_blueprint(feedback_bp)
     
     # Import models to ensure they're registered with SQLAlchemy
-    from .models import user, skill, user_skill, swap_request, feedback, availability, admin
+    from .models import user, skill, user_skill, swap_request, feedback, availability, admin, chat
     
     # Create database tables
     with app.app_context():

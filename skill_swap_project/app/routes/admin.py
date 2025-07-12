@@ -157,13 +157,15 @@ def approve_skill(skill_id):
 def reject_skill(skill_id):
     """Reject a skill"""
     skill = Skill.query.get_or_404(skill_id)
+    reason = request.form.get('reason', 'Inappropriate content')
     
     if not skill.is_approved:
         flash('Skill is already rejected', 'info')
     else:
         skill.is_approved = False
+        skill.rejection_reason = reason
         db.session.commit()
-        flash(f'Skill {skill.name} has been rejected', 'success')
+        flash(f'Skill {skill.name} has been rejected: {reason}', 'success')
     
     return redirect(url_for('admin.manage_skills'))
 
@@ -187,6 +189,39 @@ def manage_swaps():
                          swaps=swaps,
                          status=status)
 
+@admin_bp.route('/admin/messages')
+@admin_required
+def manage_messages():
+    """Manage platform-wide messages"""
+    return render_template('admin/manage_messages.html')
+
+@admin_bp.route('/admin/messages/send', methods=['POST'])
+@admin_required
+def send_platform_message():
+    """Send platform-wide message"""
+    title = request.form.get('title', '').strip()
+    message = request.form.get('message', '').strip()
+    message_type = request.form.get('type', 'info')
+    
+    if not title or not message:
+        flash('Title and message are required', 'error')
+        return redirect(url_for('admin.manage_messages'))
+    
+    # Store the message in database (you can create a PlatformMessage model)
+    # For now, we'll emit it via Socket.IO to all connected users
+    
+    # Emit to all connected users
+    from .. import socketio
+    socketio.emit('platform_message', {
+        'title': title,
+        'message': message,
+        'type': message_type,
+        'timestamp': datetime.utcnow().isoformat()
+    })
+    
+    flash(f'Platform message "{title}" sent successfully', 'success')
+    return redirect(url_for('admin.manage_messages'))
+
 @admin_bp.route('/admin/reports')
 @admin_required
 def reports():
@@ -202,6 +237,9 @@ def reports():
     elif report_type == 'feedback':
         data = generate_feedback_report()
         filename = f'feedback_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    elif report_type == 'activity':
+        data = generate_activity_report()
+        filename = f'activity_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
     else:
         flash('Invalid report type', 'error')
         return redirect(url_for('admin.dashboard'))
@@ -212,6 +250,47 @@ def reports():
         as_attachment=True,
         download_name=filename
     )
+
+@admin_bp.route('/admin/analytics')
+@admin_required
+def analytics():
+    """View platform analytics"""
+    # Get date range
+    days = request.args.get('days', 30, type=int)
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days)
+    
+    # User registration trends
+    new_users = User.query.filter(
+        User.created_at >= start_date
+    ).count()
+    
+    # Swap activity trends
+    new_swaps = SwapRequest.query.filter(
+        SwapRequest.created_at >= start_date
+    ).count()
+    
+    completed_swaps = SwapRequest.query.filter(
+        SwapRequest.completed_at >= start_date
+    ).count()
+    
+    # Top skills
+    from sqlalchemy import func
+    top_skills = db.session.query(
+        UserSkill.skill_name,
+        func.count(UserSkill.id).label('count')
+    ).filter(
+        UserSkill.created_at >= start_date
+    ).group_by(UserSkill.skill_name).order_by(
+        func.count(UserSkill.id).desc()
+    ).limit(10).all()
+    
+    return render_template('admin/analytics.html',
+                         days=days,
+                         new_users=new_users,
+                         new_swaps=new_swaps,
+                         completed_swaps=completed_swaps,
+                         top_skills=top_skills)
 
 def generate_users_report():
     """Generate users report"""
@@ -294,6 +373,52 @@ def generate_feedback_report():
             feedback.rating,
             feedback.comment or '',
             feedback.created_at.strftime('%Y-%m-%d %H:%M:%S') if feedback.created_at else ''
+        ])
+    
+    return output.getvalue()
+
+def generate_activity_report():
+    """Generate user activity report"""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['User ID', 'User Name', 'Email', 'Registration Date', 'Last Login', 'Total Skills', 'Total Swaps', 'Completed Swaps', 'Avg Rating', 'Status'])
+    
+    # Get all users with their activity stats
+    users = User.query.all()
+    for user in users:
+        # Count user's skills
+        total_skills = UserSkill.query.filter_by(user_id=user.id).count()
+        
+        # Count user's swaps
+        total_swaps = SwapRequest.query.filter(
+            (SwapRequest.requester_id == user.id) | (SwapRequest.receiver_id == user.id)
+        ).count()
+        
+        # Count completed swaps
+        completed_swaps = SwapRequest.query.filter(
+            ((SwapRequest.requester_id == user.id) | (SwapRequest.receiver_id == user.id)) &
+            (SwapRequest.status == 'completed')
+        ).count()
+        
+        # Get average rating
+        avg_rating = Feedback.get_user_average_rating(user.id)
+        
+        # Determine status
+        status = 'Banned' if user.is_banned else 'Active'
+        
+        writer.writerow([
+            user.id,
+            user.name,
+            user.email,
+            user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',
+            user.updated_at.strftime('%Y-%m-%d %H:%M:%S') if user.updated_at else '',
+            total_skills,
+            total_swaps,
+            completed_swaps,
+            avg_rating,
+            status
         ])
     
     return output.getvalue()

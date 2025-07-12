@@ -77,5 +77,10 @@ class User(UserMixin, db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Load user for Flask-Login"""
-    return User.query.get(int(user_id)) 
+    """Load user for Flask-Login (supports both User and Admin)"""
+    from .admin import Admin
+    user = User.query.get(int(user_id))
+    if user:
+        return user
+    admin = Admin.query.get(int(user_id))
+    return admin 

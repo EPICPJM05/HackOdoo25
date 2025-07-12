@@ -82,7 +82,7 @@ DATABASE_URL=mysql://username:password@localhost/skill_swap
 python run.py
 ```
 
-The application will be available at `http://localhost:5000`
+The application will be available at `http://localhost:5001`
 
 ## 📁 Project Structure
 

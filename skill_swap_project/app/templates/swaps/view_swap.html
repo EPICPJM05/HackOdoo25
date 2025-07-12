@@ -161,6 +161,9 @@
                     {% endif %}
                 {% elif swap.status == 'accepted' %}
                     <div class="d-grid gap-2">
+                        <a href="{{ url_for('swaps.chat', swap_id=swap.id) }}" class="btn btn-primary w-100">
+                            <i class="fas fa-comments me-2"></i>Open Chat
+                        </a>
                         <form method="POST" action="{{ url_for('swaps.complete_swap', swap_id=swap.id) }}">
                             <button type="submit" class="btn btn-success w-100" 
                                     onclick="return confirm('Mark this swap as completed?')">

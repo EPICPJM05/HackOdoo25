@@ -269,21 +269,49 @@ function setupSearchFunctionality() {
             }, 300);
         });
     }
+    
+    // Add clear filters functionality
+    const clearFiltersBtn = document.getElementById('clear-filters');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function() {
+            window.location.href = window.location.pathname;
+        });
+    }
 }
 
 // Perform search
 function performSearch() {
     const searchInput = document.querySelector('input[name="skill"]');
     const skillType = document.querySelector('select[name="type"]');
+    const nameInput = document.querySelector('input[name="name"]');
+    const locationInput = document.querySelector('input[name="location"]');
     
+    const searchUrl = new URL(window.location);
+    
+    // Add all search parameters
     if (searchInput && searchInput.value.trim()) {
-        const searchUrl = new URL(window.location);
         searchUrl.searchParams.set('skill', searchInput.value.trim());
-        if (skillType) {
-            searchUrl.searchParams.set('type', skillType.value);
-        }
-        window.location.href = searchUrl.toString();
+    } else {
+        searchUrl.searchParams.delete('skill');
     }
+    
+    if (skillType) {
+        searchUrl.searchParams.set('type', skillType.value);
+    }
+    
+    if (nameInput && nameInput.value.trim()) {
+        searchUrl.searchParams.set('name', nameInput.value.trim());
+    } else {
+        searchUrl.searchParams.delete('name');
+    }
+    
+    if (locationInput && locationInput.value.trim()) {
+        searchUrl.searchParams.set('location', locationInput.value.trim());
+    } else {
+        searchUrl.searchParams.delete('location');
+    }
+    
+    window.location.href = searchUrl.toString();
 }
 
 // Search skills for autocomplete
@@ -500,4 +528,40 @@ window.SkillSwapApp = {
     truncateText,
     updatePendingCount,
     updateActiveCount
-}; 
+};
+
+// Handle platform-wide messages
+function handlePlatformMessages() {
+    const socket = io();
+    
+    socket.on('platform_message', function(data) {
+        showPlatformMessage(data);
+    });
+}
+
+// Show platform message
+function showPlatformMessage(data) {
+    const alertHtml = `
+        <div class="alert alert-${data.type} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <h6 class="alert-heading mb-1">${data.title}</h6>
+                    <p class="mb-0">${data.message}</p>
+                    <small class="text-muted">Platform Message • ${new Date(data.timestamp).toLocaleString()}</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    `;
+    
+    // Insert at the top of the flash messages container
+    const flashContainer = document.querySelector('.container.mt-3');
+    if (flashContainer) {
+        flashContainer.insertAdjacentHTML('afterbegin', alertHtml);
+    }
+}
+
+// Initialize platform message handling
+document.addEventListener('DOMContentLoaded', function() {
+    handlePlatformMessages();
+}); 

@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - {{ other_user.name }} - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('swaps.my_swaps') }}">My Swaps</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('swaps.view_swap', swap_id=swap.id) }}">Swap Details</a></li>
+                <li class="breadcrumb-item active">Chat</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Chat Container -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Chat with {{ other_user.name }}
+                    </h5>
+                    <span class="badge bg-light text-dark">
+                        {{ swap.requester_skill }} ↔ {{ swap.receiver_skill }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <!-- Messages Container -->
+                <div id="messages-container" class="chat-messages p-3" style="height: 400px; overflow-y: auto;">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="message {% if message.sender_id == current_user.id %}message-own{% else %}message-other{% endif %} mb-3">
+                                <div class="message-content">
+                                    {% if message.message_type == 'system' %}
+                                        <div class="system-message text-center">
+                                            <small class="text-muted">{{ message.message }}</small>
+                                        </div>
+                                    {% else %}
+                                        <div class="message-header">
+                                            <strong>{{ message.sender.name if message.sender else 'System' }}</strong>
+                                            <small class="text-muted ms-2">{{ message.created_at.strftime('%I:%M %p') }}</small>
+                                        </div>
+                                        <div class="message-text">
+                                            {{ message.message }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-comments fa-2x mb-2"></i>
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Message Input -->
+                <div class="chat-input p-3 border-top">
+                    <form id="message-form" class="d-flex">
+                        <input type="text" id="message-input" class="form-control me-2" 
+                               placeholder="Type your message..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- Swap Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Swap Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>{{ swap.requester.name }} offers:</h6>
+                    <span class="badge bg-success">{{ swap.requester_skill }}</span>
+                </div>
+                <div class="mb-3">
+                    <h6>{{ swap.receiver.name }} offers:</h6>
+                    <span class="badge bg-primary">{{ swap.receiver_skill }}</span>
+                </div>
+                <div class="mb-3">
+                    <h6>Status:</h6>
+                    <span class="badge bg-success">Active</span>
+                </div>
+                <div>
+                    <h6>Started:</h6>
+                    <small class="text-muted">{{ swap.updated_at.strftime('%B %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other User Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Chatting with</h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="profile-avatar bg-light d-flex align-items-center justify-content-center mx-auto mb-3">
+                    <i class="fas fa-user fa-2x text-muted"></i>
+                </div>
+                <h6>{{ other_user.name }}</h6>
+                {% if other_user.location %}
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ other_user.location }}
+                    </p>
+                {% endif %}
+                <p class="text-muted mb-0">
+                    <i class="fas fa-envelope me-1"></i>{{ other_user.email }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('swaps.view_swap', swap_id=swap.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-2"></i>View Swap Details
+                    </a>
+                    <form method="POST" action="{{ url_for('swaps.complete_swap', swap_id=swap.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-success w-100" 
+                                onclick="return confirm('Mark this swap as completed?')">
+                            <i class="fas fa-check-double me-2"></i>Complete Swap
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-messages {
+    background-color: #f8f9fa;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.message-own {
+    justify-content: flex-end;
+}
+
+.message-other {
+    justify-content: flex-start;
+}
+
+.message-content {
+    max-width: 70%;
+    padding: 0.75rem;
+    border-radius: 1rem;
+    position: relative;
+}
+
+.message-own .message-content {
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.message-other .message-content {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-bottom-left-radius: 0.25rem;
+}
+
+.message-header {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.message-text {
+    word-wrap: break-word;
+}
+
+.system-message {
+    background-color: #e9ecef;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    font-style: italic;
+}
+
+.chat-input {
+    background-color: white;
+}
+
+/* Scrollbar styling */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize Socket.IO for chat
+const chatSocket = io();
+
+// Join the swap chat room
+chatSocket.emit('join_swap_chat', { swap_id: {{ swap.id }} });
+
+// DOM elements
+const messagesContainer = document.getElementById('messages-container');
+const messageForm = document.getElementById('message-form');
+const messageInput = document.getElementById('message-input');
+
+// Scroll to bottom of messages
+function scrollToBottom() {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Add a new message to the chat
+function addMessage(message) {
+    const messageDiv = document.createElement('div');
+    const isOwnMessage = message.sender_id === {{ current_user.id }};
+    
+    if (message.message_type === 'system') {
+        messageDiv.innerHTML = `
+            <div class="message mb-3">
+                <div class="message-content">
+                    <div class="system-message text-center">
+                        <small class="text-muted">${message.message}</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="message ${isOwnMessage ? 'message-own' : 'message-other'} mb-3">
+                <div class="message-content">
+                    <div class="message-header">
+                        <strong>${message.sender_name}</strong>
+                        <small class="text-muted ms-2">${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+                    </div>
+                    <div class="message-text">
+                        ${message.message}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Handle new messages from Socket.IO
+chatSocket.on('new_message', function(message) {
+    addMessage(message);
+});
+
+// Socket.IO connection events
+chatSocket.on('connect', function() {
+    // Connection established
+});
+
+chatSocket.on('disconnect', function() {
+    // Connection lost
+});
+
+chatSocket.on('connect_error', function(error) {
+    console.error('Socket.IO connection error:', error);
+});
+
+// Handle form submission
+messageForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const message = messageInput.value.trim();
+    
+    if (!message) {
+        return false;
+    }
+    
+    // Clear input immediately for better UX
+    messageInput.value = '';
+    
+    // Send message via AJAX
+    fetch('/api/swap/{{ swap.id }}/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            alert('Error sending message: ' + data.error);
+            // Restore the message in input if there was an error
+            messageInput.value = message;
+        } else {
+            // Add message immediately to UI for better UX
+            addMessage(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+        // Restore the message in input if there was an error
+        messageInput.value = message;
+    });
+    
+    return false; // Prevent form submission
+});
+
+// Handle Enter key in message input
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        messageForm.dispatchEvent(new Event('submit'));
+    }
+});
+
+
+
+// Auto-scroll to bottom on page load
+document.addEventListener('DOMContentLoaded', function() {
+    scrollToBottom();
+});
+
+// Handle page unload
+window.addEventListener('beforeunload', function() {
+    chatSocket.emit('leave_swap_chat', { swap_id: {{ swap.id }} });
+});
+</script>
+{% endblock %} 

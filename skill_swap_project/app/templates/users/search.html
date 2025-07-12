@@ -10,24 +10,39 @@
             <div class="card-body">
                 <form method="GET" action="{{ url_for('users.search_users') }}" id="search-form">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label for="skill" class="form-label">Search by Skill</label>
                             <input type="text" class="form-control" id="skill" name="skill" 
                                    value="{{ skill_name }}" placeholder="e.g., Python, Cooking, Guitar">
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 mb-3">
                             <label for="type" class="form-label">Skill Type</label>
                             <select class="form-select" id="type" name="type">
                                 <option value="offered" {% if skill_type == 'offered' %}selected{% endif %}>Offered</option>
                                 <option value="wanted" {% if skill_type == 'wanted' %}selected{% endif %}>Wanted</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 mb-3">
+                            <label for="name" class="form-label">User Name</label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ user_name }}" placeholder="e.g., John, Sarah">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   value="{{ location }}" placeholder="e.g., New York, London">
+                        </div>
+                        <div class="col-md-2 mb-3">
                             <label class="form-label">&nbsp;</label>
-                            <div class="d-grid">
+                            <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search me-2"></i>Search
                                 </button>
+                                {% if skill_name or user_name or location %}
+                                    <button type="button" id="clear-filters" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-times me-1"></i>Clear Filters
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -38,11 +53,26 @@
 
     <!-- Search Results -->
     <div class="col-12">
-        {% if skill_name %}
+        {% set has_filters = skill_name or user_name or location %}
+        
+        {% if has_filters %}
             <h4 class="mb-3">
                 <i class="fas fa-search me-2"></i>
-                Users offering "{{ skill_name }}" ({{ skill_type }})
+                Search Results
             </h4>
+            <div class="mb-3">
+                <small class="text-muted">
+                    {% if skill_name %}
+                        <span class="badge bg-primary me-2">Skill: {{ skill_name }} ({{ skill_type }})</span>
+                    {% endif %}
+                    {% if user_name %}
+                        <span class="badge bg-info me-2">Name: {{ user_name }}</span>
+                    {% endif %}
+                    {% if location %}
+                        <span class="badge bg-success me-2">Location: {{ location }}</span>
+                    {% endif %}
+                </small>
+            </div>
         {% else %}
             <h4 class="mb-3">
                 <i class="fas fa-users me-2"></i>
@@ -131,7 +161,7 @@
                     <ul class="pagination justify-content-center">
                         {% if users.has_prev %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('users.search_users', page=users.prev_num, skill=skill_name, type=skill_type) }}">
+                                <a class="page-link" href="{{ url_for('users.search_users', page=users.prev_num, skill=skill_name, type=skill_type, name=user_name, location=location) }}">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
@@ -140,7 +170,7 @@
                         {% for page_num in users.iter_pages() %}
                             {% if page_num %}
                                 <li class="page-item {% if page_num == users.page %}active{% endif %}">
-                                    <a class="page-link" href="{{ url_for('users.search_users', page=page_num, skill=skill_name, type=skill_type) }}">
+                                    <a class="page-link" href="{{ url_for('users.search_users', page=page_num, skill=skill_name, type=skill_type, name=user_name, location=location) }}">
                                         {{ page_num }}
                                     </a>
                                 </li>
@@ -153,7 +183,7 @@
 
                         {% if users.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('users.search_users', page=users.next_num, skill=skill_name, type=skill_type) }}">
+                                <a class="page-link" href="{{ url_for('users.search_users', page=users.next_num, skill=skill_name, type=skill_type, name=user_name, location=location) }}">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
@@ -167,8 +197,8 @@
                 <i class="fas fa-search fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No users found</h5>
                 <p class="text-muted">
-                    {% if skill_name %}
-                        No users found offering "{{ skill_name }}". Try a different search term.
+                    {% if has_filters %}
+                        No users found matching your search criteria. Try adjusting your filters.
                     {% else %}
                         No users available at the moment.
                     {% endif %}

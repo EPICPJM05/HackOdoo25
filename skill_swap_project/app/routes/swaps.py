@@ -133,6 +133,16 @@ def accept_swap(swap_id):
     
     # Accept the swap
     swap_request.accept()
+    
+    # Create a system message for the chat
+    from ..models.chat import ChatMessage
+    system_message = ChatMessage(
+        swap_id=swap_id,
+        sender_id=swap_request.receiver_id,  # Use receiver as sender for system message
+        message=f"Swap accepted! You can now chat to coordinate your skill exchange.",
+        message_type='system'
+    )
+    db.session.add(system_message)
     db.session.commit()
     
     # Emit real-time notification
@@ -142,7 +152,7 @@ def accept_swap(swap_id):
         'message': f'Your swap request has been accepted by {current_user.name}'
     }, room=f'user_{swap_request.requester_id}')
     
-    flash('Swap request accepted!', 'success')
+    flash('Swap request accepted! You can now chat with the other user.', 'success')
     return redirect(url_for('swaps.my_swaps'))
 
 @swaps_bp.route('/swap/<int:swap_id>/reject', methods=['POST'])
@@ -250,7 +260,8 @@ def view_swap(swap_id):
 @login_required
 def get_pending_count():
     """Get count of pending swap requests"""
-    count = SwapRequest.get_pending_requests(current_user.id).count()
+    pending_requests = SwapRequest.get_pending_requests(current_user.id)
+    count = len(pending_requests)
     return jsonify({'count': count})
 
 @swaps_bp.route('/api/swaps/active-count')
@@ -270,4 +281,110 @@ def handle_connect():
 def handle_disconnect():
     """Handle WebSocket disconnection"""
     if current_user.is_authenticated:
-        socketio.leave_room(f'user_{current_user.id}') 
+        socketio.leave_room(f'user_{current_user.id}')
+
+# Chat routes
+@swaps_bp.route('/swap/<int:swap_id>/chat')
+@login_required
+def chat(swap_id):
+    """Chat interface for an accepted swap"""
+    swap_request = SwapRequest.query.get_or_404(swap_id)
+    
+    # Check if current user participated in this swap
+    if swap_request.requester_id != current_user.id and swap_request.receiver_id != current_user.id:
+        flash('You can only chat in swaps you participated in', 'error')
+        return redirect(url_for('swaps.my_swaps'))
+    
+    # Check if swap is accepted (only accepted swaps can have chat)
+    if swap_request.status != 'accepted':
+        flash('Chat is only available for accepted swaps', 'error')
+        return redirect(url_for('swaps.view_swap', swap_id=swap_id))
+    
+    # Get the other participant
+    other_user_id = swap_request.receiver_id if swap_request.requester_id == current_user.id else swap_request.requester_id
+    other_user = User.query.get(other_user_id)
+    
+    # Get recent messages
+    from ..models.chat import ChatMessage
+    messages = ChatMessage.get_swap_messages(swap_id, limit=100)
+    
+    return render_template('swaps/chat.html',
+                         swap=swap_request,
+                         other_user=other_user,
+                         messages=messages)
+
+@swaps_bp.route('/api/swap/<int:swap_id>/messages', methods=['GET'])
+@login_required
+def get_messages(swap_id):
+    """Get messages for a swap"""
+    swap_request = SwapRequest.query.get_or_404(swap_id)
+    
+    # Check if current user participated in this swap
+    if swap_request.requester_id != current_user.id and swap_request.receiver_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    # Check if swap is accepted
+    if swap_request.status != 'accepted':
+        return jsonify({'error': 'Chat not available'}), 400
+    
+    from ..models.chat import ChatMessage
+    messages = ChatMessage.get_swap_messages(swap_id, limit=100)
+    
+    return jsonify({
+        'messages': [msg.to_dict() for msg in messages]
+    })
+
+@swaps_bp.route('/api/swap/<int:swap_id>/messages', methods=['POST'])
+@login_required
+def send_message(swap_id):
+    """Send a message in a swap chat"""
+    swap_request = SwapRequest.query.get_or_404(swap_id)
+    
+    # Check if current user participated in this swap
+    if swap_request.requester_id != current_user.id and swap_request.receiver_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    # Check if swap is accepted
+    if swap_request.status != 'accepted':
+        return jsonify({'error': 'Chat not available'}), 400
+    
+    message_text = request.json.get('message', '').strip()
+    if not message_text:
+        return jsonify({'error': 'Message cannot be empty'}), 400
+    
+    from ..models.chat import ChatMessage
+    message = ChatMessage(
+        swap_id=swap_id,
+        sender_id=current_user.id,
+        message=message_text
+    )
+    
+    db.session.add(message)
+    db.session.commit()
+    
+    # Emit real-time message to both participants
+    message_data = message.to_dict()
+    room_name = f'swap_{swap_id}'
+    socketio.emit('new_message', message_data, room=room_name)
+    
+    return jsonify(message_data)
+
+@socketio.on('join_swap_chat')
+def handle_join_swap_chat(data):
+    """Join a swap chat room"""
+    swap_id = data.get('swap_id')
+    if swap_id and current_user.is_authenticated:
+        swap_request = SwapRequest.query.get(swap_id)
+        if swap_request and (swap_request.requester_id == current_user.id or swap_request.receiver_id == current_user.id):
+            room_name = f'swap_{swap_id}'
+            socketio.join_room(room_name)
+
+@socketio.on('leave_swap_chat')
+def handle_leave_swap_chat(data):
+    """Leave a swap chat room"""
+    swap_id = data.get('swap_id')
+    if swap_id and current_user.is_authenticated:
+        room_name = f'swap_{swap_id}'
+        socketio.leave_room(room_name)
+
+ 

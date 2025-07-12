@@ -180,35 +180,55 @@ def delete_skill(skill_id):
 
 @users_bp.route('/search')
 def search_users():
-    """Search users by skill"""
+    """Search users by skill, name, or location"""
     skill_name = request.args.get('skill', '').strip()
     skill_type = request.args.get('type', 'offered')
+    user_name = request.args.get('name', '').strip()
+    location = request.args.get('location', '').strip()
     page = request.args.get('page', 1, type=int)
     per_page = 12
     
-    if not skill_name:
-        # Show all public users
-        users = User.query.filter_by(is_public=True, is_banned=False)\
-                         .paginate(page=page, per_page=per_page, error_out=False)
-        return render_template('users/search.html', users=users, skill_name='', skill_type='')
-    
-    # Search users by skill
-    user_skills = UserSkill.query.filter_by(
-        skill_name=skill_name,
-        skill_type=skill_type
-    ).all()
-    
-    user_ids = [us.user_id for us in user_skills]
-    users = User.query.filter(
-        User.id.in_(user_ids),
+    # Start with all public, non-banned users
+    query = User.query.filter(
         User.is_public == True,
         User.is_banned == False
-    ).paginate(page=page, per_page=per_page, error_out=False)
+    )
+    
+    # Filter by user name (partial match)
+    if user_name:
+        query = query.filter(User.name.ilike(f'%{user_name}%'))
+    
+    # Filter by location (partial match)
+    if location:
+        query = query.filter(User.location.ilike(f'%{location}%'))
+    
+    # Filter by skill (partial match)
+    if skill_name:
+        # Use subquery to find users with matching skills
+        from sqlalchemy import and_
+        user_skills_subquery = UserSkill.query.filter(
+            and_(
+                UserSkill.skill_name.ilike(f'%{skill_name}%'),
+                UserSkill.skill_type == skill_type
+            )
+        ).with_entities(UserSkill.user_id).distinct()
+        
+        user_ids = [us.user_id for us in user_skills_subquery.all()]
+        if user_ids:
+            query = query.filter(User.id.in_(user_ids))
+        else:
+            # If no users found with the skill, return empty result
+            query = query.filter(User.id == None)  # This will return no results
+    
+    # Apply pagination
+    users = query.paginate(page=page, per_page=per_page, error_out=False)
     
     return render_template('users/search.html', 
                          users=users, 
                          skill_name=skill_name, 
-                         skill_type=skill_type)
+                         skill_type=skill_type,
+                         user_name=user_name,
+                         location=location)
 
 @users_bp.route('/user/<int:user_id>')
 def view_user(user_id):
@@ -264,14 +284,19 @@ def view_user(user_id):
 # API endpoints
 @users_bp.route('/api/skills/search', methods=['POST'])
 def search_skills():
-    """Search skills via API"""
+    """Search skills via API with improved matching"""
     data = request.get_json()
     search_term = data.get('search', '').strip()
     
-    if not search_term:
+    if not search_term or len(search_term) < 2:
         return jsonify({'skills': []})
     
-    skills = Skill.search_by_name(search_term)
+    # Search for skills that contain the search term (case-insensitive)
+    skills = Skill.query.filter(
+        Skill.name.ilike(f'%{search_term}%'),
+        Skill.is_approved == True
+    ).order_by(Skill.name).limit(10).all()
+    
     return jsonify({'skills': [skill.name for skill in skills]})
 
 @users_bp.route('/api/users/<int:user_id>/skills')
