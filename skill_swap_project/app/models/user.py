@@ -72,6 +72,9 @@ class User(UserMixin, db.Model):
         pending_requests = self.swap_requests_received.filter_by(status='pending').count()
         return pending_requests < 5  # Limit to 5 pending requests
     
+    def get_id(self):
+        return f"user-{self.id}"
+    
     def __repr__(self):
         return f'<User {self.email}>'
 
@@ -79,8 +82,8 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     """Load user for Flask-Login (supports both User and Admin)"""
     from .admin import Admin
-    user = User.query.get(int(user_id))
-    if user:
-        return user
-    admin = Admin.query.get(int(user_id))
-    return admin 
+    if user_id.startswith("user-"):
+        return User.query.get(int(user_id.split("-")[1]))
+    elif user_id.startswith("admin-"):
+        return Admin.query.get(int(user_id.split("-")[1]))
+    return None 

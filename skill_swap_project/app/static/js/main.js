@@ -1,7 +1,7 @@
 // Main JavaScript for Skill Swap Platform
 
 // Initialize Socket.IO connection
-let socket = io();
+let socket = io(`${location.protocol}//${location.hostname}:5005`);
 
 // Global variables
 let currentUser = null;
@@ -428,7 +428,10 @@ function setupModalHandlers() {
             const userName = button.getAttribute('data-user-name');
             
             const modal = this;
-            modal.querySelector('#receiver-id').value = userId;
+            const receiverIdInput = modal.querySelector('#receiver-id');
+            if (receiverIdInput) {
+                receiverIdInput.value = userId;
+            }
             modal.querySelector('.modal-title').textContent = `Send Swap Request to ${userName}`;
         });
     }
@@ -531,13 +534,11 @@ window.SkillSwapApp = {
 };
 
 // Handle platform-wide messages
-function handlePlatformMessages() {
-    const socket = io();
-    
-    socket.on('platform_message', function(data) {
-        showPlatformMessage(data);
-    });
-}
+// Listen for platform_message on the main socket instance
+socket.on('platform_message', function(data) {
+    console.log('Received platform_message:', data);
+    showPlatformMessage(data);
+});
 
 // Show platform message
 function showPlatformMessage(data) {
@@ -553,15 +554,9 @@ function showPlatformMessage(data) {
             </div>
         </div>
     `;
-    
     // Insert at the top of the flash messages container
     const flashContainer = document.querySelector('.container.mt-3');
     if (flashContainer) {
         flashContainer.insertAdjacentHTML('afterbegin', alertHtml);
     }
-}
-
-// Initialize platform message handling
-document.addEventListener('DOMContentLoaded', function() {
-    handlePlatformMessages();
-}); 
+} 
